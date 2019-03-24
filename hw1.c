@@ -55,7 +55,7 @@ void tcp(char* filter) {
         //get the essential parameters
         sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
 
-        sprintf(line, "tcp %s:%s\t%s:%s\t%s",hex_to_ipv4(local_addr), hex_to_num(local_port), hex_to_ipv4(remote_addr),hex_to_num(remote_port)  , inode_to_proc(inode));
+        sprintf(line, "tcp %s:%s\t%s:%s\t%s",hex_to_ipv4(local_addr), hex_to_dec(local_port), hex_to_ipv4(remote_addr),hex_to_dec(remote_port)  , inode_to_proc(inode));
         printf("%s\n", line);
         free(local_addr);
         free(local_port);
@@ -86,11 +86,11 @@ void tcp6(char* filter) {
         sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
         //printf("%s \n", inode_to_proc(inode));
         sprintf(line,"tcp6 %s:",hex_to_ipv6(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(local_port));
         sprintf(line,"%s%s:",line, hex_to_ipv6(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(remote_port));
         sprintf(line, "%s%s ",line, inode_to_proc(inode));
-        //printf("tcp6 %s:%s\t%s:%s\t%s\n",hex_to_ipv6(local_addr), hex_to_num(local_port), hex_to_ipv6(remote_addr),hex_to_num(remote_port)  , inode_to_proc(inode));
+        //printf("tcp6 %s:%s\t%s:%s\t%s\n",hex_to_ipv6(local_addr), hex_to_dec(local_port), hex_to_ipv6(remote_addr),hex_to_dec(remote_port)  , inode_to_proc(inode));
         printf("%s\n", line);
         free(local_addr);
         free(local_port);
@@ -122,9 +122,9 @@ void udp(char* filter) {
         sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
 
         sprintf(line,"udp %s:",hex_to_ipv4(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(local_port));
         sprintf(line,"%s%s:",line, hex_to_ipv4(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(remote_port));
         sprintf(line, "%s%s ",line, inode_to_proc(inode));
         printf("%s\n", line);
         free(local_addr);
@@ -156,9 +156,9 @@ void udp6(char* filter) {
         sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
         //printf("%s \n", inode_to_proc(inode));
         sprintf(line,"udp6 %s:",hex_to_ipv6(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(local_port));
         sprintf(line,"%s%s:",line, hex_to_ipv6(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
+        sprintf(line, "%s%s\t",line, hex_to_dec(remote_port));
         sprintf(line, "%s%s ",line, inode_to_proc(inode));
         
         printf("%s\n", line);

@@ -22,12 +22,6 @@ char* hex_to_dec(char* hex) {
     sprintf(res, "%ld", i );
     return res;
 }
-char* hex_to_num(char* hex) {
-    char* rev_str = reverse_hex(hex);
-    char* res = hex_to_dec(rev_str);
-    free(rev_str);
-    return res;
-}
 char* hex_to_ipv4(char* hex) {
     char* rev_str = reverse_hex(hex);
     char* res = malloc(40*sizeof(char));
