@@ -1,17 +1,39 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "helper.h"
 
 void tcp(char*);
 void tcp6(char*);
 void udp(char*);
 void udp6(char*);
-int main(int argv, char *args[]) {
-    tcp("");
-    tcp6("");
-    udp("");
-    udp6("");
+int main(int argc, char *argv[]) {
+    struct option long_options[] = {
+        {"tcp", no_argument, NULL, 't'},
+        {"udp", no_argument, NULL, 'u'},
+        {0,0,0,0}
+    };
+    char opt;
+    while((opt = getopt_long(argc, argv, "tu", long_options, NULL) ) != -1) {
+        switch(opt) {
+            case 't':
+                tcp("");
+                tcp6("");
+                break;
+            case 'u':
+                udp("");
+                udp6("");
+                break;
+        }
+    }
+    if (argc == 1) {
+                tcp("");
+                tcp6("");
+                udp("");
+                udp6("");
+        
+    } 
     return 0;
 }
 void tcp(char* filter) {
