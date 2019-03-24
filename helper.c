@@ -22,12 +22,6 @@ char* hex_to_dec(char* hex) {
     sprintf(res, "%ld", i );
     return res;
 }
-char* hex_to_num(char* hex) {
-    char* rev_str = reverse_hex(hex);
-    char* res = hex_to_dec(rev_str);
-    free(rev_str);
-    return res;
-}
 char* hex_to_ipv4(char* hex) {
     char* rev_str = reverse_hex(hex);
     char* res = malloc(40*sizeof(char));
@@ -36,16 +30,12 @@ char* hex_to_ipv4(char* hex) {
     strncpy(tmp_hex, rev_str, 2);
     char* tmp_num = hex_to_dec(tmp_hex); 
     strcat(res, tmp_num);
-    free(tmp_num);
     for (int i = 2; i < strlen(rev_str) ; i+=2) {
         strcat(res, ".");
         strncpy(tmp_hex, rev_str+i, 2);
         tmp_num = hex_to_dec(tmp_hex);
         strcat(res, tmp_num);
-        free(tmp_num);
     }
-    free(rev_str);
-    free(tmp_hex);
     return res;
 }
 char* hex_to_ipv6(char* hex) {
@@ -61,8 +51,6 @@ char* hex_to_ipv6(char* hex) {
         char* ipv4 = hex_to_ipv4(hex+24);
         strcat(res, "::ffff:");
         strcat(res, ipv4);
-        free(check_ipv4_str);
-        free(ipv4);
         return res;
     }
 	free(check_ipv4_str);
@@ -76,7 +64,6 @@ char* hex_to_ipv6(char* hex) {
         strncpy(tmp, hex+8*i,8);
         char* tmp_hex = reverse_hex(tmp);
         strcat(ipv6, tmp_hex);
-        free(tmp_hex);
     }
     for (int i = 0 ; i < strlen(ipv6) ; i++) {
         *(ipv6+i) = tolower(*(ipv6+i));
@@ -112,9 +99,6 @@ char* hex_to_ipv6(char* hex) {
         if (i!=0) strcat(res, ":");
         strcat(res, tmp_hex+offset);
     }
-	free(tmp_hex);
-	free(ipv6);
-	free(tmp);
     return res;
 }
 char* inode_to_proc(char* inode) {
@@ -140,15 +124,11 @@ char* inode_to_proc(char* inode) {
             char* link_path = malloc(256*sizeof(char));
             char* target_path = malloc(256*sizeof(char));
             if (strcmp(fd_de->d_name, ".") ==0 || strcmp(fd_de->d_name, "..") == 0) {
-                free(link_path);
-                free(target_path);
                 continue;
             } 
             sprintf(link_path, "%s/%s", tmp_fd, fd_de->d_name);
             int status = readlink(link_path, target_path, 256*sizeof(char));
             if( status == -1) {
-                free(link_path);
-                free(target_path);
                 continue;
             }
             char* file_inode = malloc(12*sizeof(char));
@@ -157,9 +137,6 @@ char* inode_to_proc(char* inode) {
             if(strcmp(file_inode, "") != 0) {
                 status = strcmp(file_inode, inode);
             }
-            free(file_inode);
-            free(link_path);
-            free(target_path);
             if (status == 0) {
                 char* pid = de->d_name;
                 char* p_name = malloc(32*sizeof(char));
@@ -173,7 +150,6 @@ char* inode_to_proc(char* inode) {
                 	char* buffer = malloc(64*sizeof(char));
                     fgets(buffer, 64, fp);
                     sscanf(buffer,"%s", p_name);
-					free(buffer);
                 }
                 fclose(fp);
                 // Read the proc/<pid>/cmdline to get parameters
@@ -190,16 +166,12 @@ char* inode_to_proc(char* inode) {
                 fclose(fp);
                 //
                 sprintf(res, "%s/%s %s", pid, p_name, buffer+i+1);
-                free(buffer);
-                free(p_name);
-                free(tmp_fd);
                 closedir(fd_dr);
                 closedir(dr);
                 return res;
             }
         }
         closedir(fd_dr);
-        free(tmp_fd);
     }
     closedir(dr);
     return "-";

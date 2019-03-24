@@ -2,12 +2,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include <ctype.h>
+#include <string.h>
 #include "helper.h"
 
-void tcp(char*);
-void tcp6(char*);
-void udp(char*);
-void udp6(char*);
+void proto(char*,char*);
+void proto6(char*, char*);
 int main(int argc, char *argv[]) {
     struct option long_options[] = {
         {"tcp", no_argument, NULL, 't'},
@@ -18,157 +18,70 @@ int main(int argc, char *argv[]) {
     while((opt = getopt_long(argc, argv, "tu", long_options, NULL) ) != -1) {
         switch(opt) {
             case 't':
-                tcp("");
-                tcp6("");
+                proto("tcp", "");
+                proto("tcp6", "");
                 break;
             case 'u':
-                udp("");
-                udp6("");
+                proto("udp", "");
+                proto6("udp","");
                 break;
         }
     }
     if (argc == 1) {
-                tcp("");
-                tcp6("");
-                udp("");
-                udp6("");
+                proto("tcp","");
+                proto6("tcp","");
+                proto("udp", "");
+                proto6("udp","");
         
     } 
     return 0;
 }
-void tcp(char* filter) {
-    printf("List of TCP connections:\nProto Local Address\tForeign Address\tPID/Program name and arguments\n");
-    //tcp ipv4
+void proto(char* protocol, char* filter) {
+    char upper_p[12];
+    strcpy(upper_p, protocol);
+    for (int i = 0 ; i < strlen(upper_p); i++) 
+        upper_p[i] = toupper(upper_p[i]);
+    printf("List of %s connections:\nProto Local Address\tForeign Address\tPID/Program name and arguments\n",  upper_p);
     FILE *fp;
-    char* buffer  = malloc(255*sizeof(char));
-    fp = fopen("/proc/net/tcp", "r");
+    char filename[64];
+    char buffer[255];
+    sprintf(filename, "/proc/net/%s", protocol);
+    fp = fopen(filename, "r");
     fgets(buffer, 255, fp);
-    while(!feof(fp)) {
-        char* line = malloc(255*sizeof(char));
-        fgets(buffer, 255, fp);
-        //parse a line
-        char* local_addr = malloc(20*sizeof(char));
-        char* local_port = malloc(8*sizeof(char));
-        char* remote_addr = malloc(20*sizeof(char));
-        char* remote_port = malloc(8*sizeof(char));
-        char* inode = malloc(12*sizeof(char));
-        //get the essential parameters
-        sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
+    char local_addr[20];
+    char local_port[8];
+    char remote_addr[20];
+    char remote_port[8];
+    char inode[12];
+    while(fscanf(fp, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s %*[^\n]", local_addr, local_port,  remote_addr, remote_port, inode) == 5 ) {
+        char line[255];
+        char* l_ip= hex_to_ipv4(local_addr);
+        char* l_port = hex_to_dec(local_port);
+        char* r_ip= hex_to_ipv4(remote_addr);
+        char* r_port = hex_to_dec(remote_port);
+        char* proc = inode_to_proc(inode);
+        sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
+        printf("%s\n", line);
+    }
+    fclose(fp);
+}
 
-        sprintf(line, "tcp %s:%s\t%s:%s\t%s",hex_to_ipv4(local_addr), hex_to_num(local_port), hex_to_ipv4(remote_addr),hex_to_num(remote_port)  , inode_to_proc(inode));
-        printf("%s\n", line);
-        free(local_addr);
-        free(local_port);
-        free(remote_addr);
-        free(remote_port);
-        free(inode);
-        free(line);
-    }
-    free(buffer);
-    fclose(fp);
-}
-void tcp6(char* filter) {
-    //tcp ipv6
+void proto6(char* protocol, char* filter) {
     FILE *fp;
-    char* buffer  = malloc(255*sizeof(char));
-    fp = fopen("/proc/net/tcp6", "r");
+    char filename[64];
+    char buffer[255];
+    sprintf(filename, "/proc/net/%s6", protocol);
+    fp = fopen(filename, "r");
     fgets(buffer, 255, fp);
-    while(!feof(fp)) {
-        char* line = malloc(255*sizeof(char));
-        fgets(buffer, 255, fp);
-        //parse a line
-        char* local_addr = malloc(40*sizeof(char));
-        char* local_port = malloc(8*sizeof(char));
-        char* remote_addr = malloc(40*sizeof(char));
-        char* remote_port = malloc(8*sizeof(char));
-        char* inode = malloc(12*sizeof(char));
-        //get the essential parameters
-        sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
-        //printf("%s \n", inode_to_proc(inode));
-        sprintf(line,"tcp6 %s:",hex_to_ipv6(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
-        sprintf(line,"%s%s:",line, hex_to_ipv6(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
-        sprintf(line, "%s%s ",line, inode_to_proc(inode));
-        //printf("tcp6 %s:%s\t%s:%s\t%s\n",hex_to_ipv6(local_addr), hex_to_num(local_port), hex_to_ipv6(remote_addr),hex_to_num(remote_port)  , inode_to_proc(inode));
+    char local_addr[20];
+    char local_port[8];
+    char remote_addr[20];
+    char remote_port[8];
+    char inode[12];
+    while(fscanf(fp, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s %*[^\n]", local_addr, local_port,  remote_addr, remote_port, inode) == 5 ) {
+        char line[255];
+        sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, hex_to_ipv6(local_addr), hex_to_dec(local_port), hex_to_ipv6(remote_addr),hex_to_dec(remote_port)  , inode_to_proc(inode));
         printf("%s\n", line);
-        free(local_addr);
-        free(local_port);
-        free(remote_addr);
-        free(remote_port);
-        free(inode);
-        free(line);
     }
-    free(buffer);
-    fclose(fp);
-}
-void udp(char* filter) {
-    printf("List of UDP connections:\nProto Local Address\tForeign Address\tPID/Program name and arguments\n");
-    //udp ipv4
-    FILE *fp;
-    char* buffer  = malloc(255*sizeof(char));
-    fp = fopen("/proc/net/udp", "r");
-    fgets(buffer, 255, fp);
-    while(!feof(fp)) {
-        char* line = malloc(255*sizeof(char));
-        fgets(buffer, 255, fp);
-        //parse a line
-        char* local_addr = malloc(20*sizeof(char));
-        char* local_port = malloc(8*sizeof(char));
-        char* remote_addr = malloc(20*sizeof(char));
-        char* remote_port = malloc(8*sizeof(char));
-        char* inode = malloc(12*sizeof(char));
-        //get the essential parameters
-        sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
-
-        sprintf(line,"udp %s:",hex_to_ipv4(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
-        sprintf(line,"%s%s:",line, hex_to_ipv4(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
-        sprintf(line, "%s%s ",line, inode_to_proc(inode));
-        printf("%s\n", line);
-        free(local_addr);
-        free(local_port);
-        free(remote_addr);
-        free(remote_port);
-        free(inode);
-        free(line);
-    }
-    free(buffer);
-    fclose(fp);
-}
-void udp6(char* filter) {
-    //tcp ipv6
-    FILE *fp;
-    char* buffer  = malloc(255*sizeof(char));
-    fp = fopen("/proc/net/udp6", "r");
-    fgets(buffer, 255, fp);
-    while(!feof(fp)) {
-        char* line = malloc(255*sizeof(char));
-        fgets(buffer, 255, fp);
-        //parse a line
-        char* local_addr = malloc(40*sizeof(char));
-        char* local_port = malloc(8*sizeof(char));
-        char* remote_addr = malloc(40*sizeof(char));
-        char* remote_port = malloc(8*sizeof(char));
-        char* inode = malloc(12*sizeof(char));
-        //get the essential parameters
-        sscanf(buffer, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s", local_addr, local_port,  remote_addr, remote_port, inode); 
-        //printf("%s \n", inode_to_proc(inode));
-        sprintf(line,"udp6 %s:",hex_to_ipv6(local_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(local_port));
-        sprintf(line,"%s%s:",line, hex_to_ipv6(remote_addr));
-        sprintf(line, "%s%s\t",line, hex_to_num(remote_port));
-        sprintf(line, "%s%s ",line, inode_to_proc(inode));
-        
-        printf("%s\n", line);
-        free(local_addr);
-        free(local_port);
-        free(remote_addr);
-        free(remote_port);
-        free(inode);
-        free(line);
-    }
-    free(buffer);
     fclose(fp);
 }
