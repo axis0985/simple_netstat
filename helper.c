@@ -39,21 +39,21 @@ char* hex_to_ipv4(char* hex) {
     return res;
 }
 char* hex_to_ipv6(char* hex) {
-    char* rev_str = reverse_hex(hex);
     //check ipv4
     char* check_ipv4_str = malloc(32*sizeof(char));
 	memset(check_ipv4_str, 0, 32*sizeof(char));
-    strcpy(check_ipv4_str, rev_str+8);
-    free(rev_str);
-    if (strcmp(check_ipv4_str, "0000FFFF0000000000000000") == 0) {
-        char* res = malloc(20*sizeof(char));
-		memset(res,0, sizeof(20*sizeof(char)));
+    strncpy(check_ipv4_str, hex, 24);
+    if (strcmp(check_ipv4_str, "0000000000000000FFFF0000") == 0) {
+        char* res = malloc(32*sizeof(char));
+		memset(res,0, sizeof(32*sizeof(char)));
         char* ipv4 = hex_to_ipv4(hex+24);
         strcat(res, "::ffff:");
         strcat(res, ipv4);
+	    free(check_ipv4_str);
         return res;
     }
 	free(check_ipv4_str);
+
     // ipv6 endian conversion 
     // AAAA AAAA:BBBB BBBB:CCCC CCCC:DDDD DDD
     char* ipv6 = malloc(40*sizeof(char));

@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
         switch(opt) {
             case 't':
                 proto("tcp", "");
-                proto("tcp6", "");
+                proto6("tcp", "");
                 break;
             case 'u':
                 proto("udp", "");
@@ -73,9 +73,9 @@ void proto6(char* protocol, char* filter) {
     sprintf(filename, "/proc/net/%s6", protocol);
     fp = fopen(filename, "r");
     fgets(buffer, 255, fp);
-    char local_addr[20];
+    char local_addr[40];
     char local_port[8];
-    char remote_addr[20];
+    char remote_addr[40];
     char remote_port[8];
     char inode[12];
     while(fscanf(fp, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s %*[^\n]", local_addr, local_port,  remote_addr, remote_port, inode) == 5 ) {
