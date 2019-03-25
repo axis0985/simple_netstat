@@ -27,6 +27,7 @@ char* hex_to_ipv4(char* hex) {
     char* res = malloc(40*sizeof(char));
     char* tmp_hex = malloc(4*sizeof(char));
 	memset(res,0, sizeof(40*sizeof(char)));
+	memset(tmp_hex,0, sizeof(4*sizeof(char)));
     strncpy(tmp_hex, rev_str, 2);
     char* tmp_num = hex_to_dec(tmp_hex); 
     strcat(res, tmp_num);
@@ -36,6 +37,9 @@ char* hex_to_ipv4(char* hex) {
         tmp_num = hex_to_dec(tmp_hex);
         strcat(res, tmp_num);
     }
+    free(tmp_hex);
+    free(tmp_num);
+    free(rev_str);
     return res;
 }
 char* hex_to_ipv6(char* hex) {
@@ -50,6 +54,7 @@ char* hex_to_ipv6(char* hex) {
         strcat(res, "::ffff:");
         strcat(res, ipv4);
 	    free(check_ipv4_str);
+        free(ipv4);
         return res;
     }
 	free(check_ipv4_str);
@@ -64,6 +69,7 @@ char* hex_to_ipv6(char* hex) {
         strncpy(tmp, hex+8*i,8);
         char* tmp_hex = reverse_hex(tmp);
         strcat(ipv6, tmp_hex);
+        free(tmp_hex);
     }
     for (int i = 0 ; i < strlen(ipv6) ; i++) {
         *(ipv6+i) = tolower(*(ipv6+i));
@@ -99,6 +105,9 @@ char* hex_to_ipv6(char* hex) {
         if (i!=0) strcat(res, ":");
         strcat(res, tmp_hex+offset);
     }
+    free(tmp_hex);
+    free(ipv6);
+    free(tmp);
     return res;
 }
 char* inode_to_proc(char* inode) {

@@ -14,26 +14,31 @@ int main(int argc, char *argv[]) {
         {"udp", no_argument, NULL, 'u'},
         {0,0,0,0}
     };
+    short tcp_flag = 0;
+    short udp_flag = 0;
     char opt;
     while((opt = getopt_long(argc, argv, "tu", long_options, NULL) ) != -1) {
         switch(opt) {
             case 't':
-                proto("tcp", "");
-                proto6("tcp", "");
+                tcp_flag = 1;
                 break;
             case 'u':
-                proto("udp", "");
-                proto6("udp","");
+                udp_flag = 1;
                 break;
         }
     }
-    if (argc == 1) {
-                proto("tcp","");
-                proto6("tcp","");
-                proto("udp", "");
-                proto6("udp","");
-        
-    } 
+    if (tcp_flag) {
+        proto("tcp","");
+        proto6("tcp","");
+    } else if (udp_flag) {
+        proto("udp","");
+        proto6("udp","");
+    } else {
+        proto("tcp","");
+        proto6("tcp","");
+        proto("udp","");
+        proto6("udp","");
+    }
     return 0;
 }
 void proto(char* protocol, char* filter) {
@@ -62,10 +67,13 @@ void proto(char* protocol, char* filter) {
         char* proc = inode_to_proc(inode);
         sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
         printf("%s\n", line);
+        free(l_ip);
+        free(l_port);
+        free(r_ip);
+        free(r_port);
     }
     fclose(fp);
 }
-
 void proto6(char* protocol, char* filter) {
     FILE *fp;
     char filename[64];
@@ -80,8 +88,17 @@ void proto6(char* protocol, char* filter) {
     char inode[12];
     while(fscanf(fp, "%*s %[^:]%*c%s %[^:]%*c%s %*s %*s %*s %*s %*s %*s %s %*[^\n]", local_addr, local_port,  remote_addr, remote_port, inode) == 5 ) {
         char line[255];
-        sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, hex_to_ipv6(local_addr), hex_to_dec(local_port), hex_to_ipv6(remote_addr),hex_to_dec(remote_port)  , inode_to_proc(inode));
+        char* l_ip= hex_to_ipv6(local_addr);
+        char* l_port = hex_to_dec(local_port);
+        char* r_ip= hex_to_ipv6(remote_addr);
+        char* r_port = hex_to_dec(remote_port);
+        char* proc = inode_to_proc(inode);
+        sprintf(line, "%s6 %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
         printf("%s\n", line);
+        free(l_ip);
+        free(l_port);
+        free(r_ip);
+        free(r_port);
     }
     fclose(fp);
 }
