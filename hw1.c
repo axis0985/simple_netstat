@@ -16,6 +16,7 @@ int main(int argc, char *argv[]) {
     };
     short tcp_flag = 0;
     short udp_flag = 0;
+    char filter[64] = "";
     char opt;
     while((opt = getopt_long(argc, argv, "tu", long_options, NULL) ) != -1) {
         switch(opt) {
@@ -27,17 +28,20 @@ int main(int argc, char *argv[]) {
                 break;
         }
     }
+    for (int i = optind; i < argc; i++) {
+        strcpy(filter, argv[i]);
+    }
     if (tcp_flag) {
-        proto("tcp","");
-        proto6("tcp","");
+        proto("tcp",filter);
+        proto6("tcp",filter);
     } else if (udp_flag) {
-        proto("udp","");
-        proto6("udp","");
+        proto("udp",filter);
+        proto6("udp",filter);
     } else {
-        proto("tcp","");
-        proto6("tcp","");
-        proto("udp","");
-        proto6("udp","");
+        proto("tcp",filter);
+        proto6("tcp",filter);
+        proto("udp",filter);
+        proto6("udp",filter);
     }
     return 0;
 }
@@ -65,12 +69,15 @@ void proto(char* protocol, char* filter) {
         char* r_ip= hex_to_ipv4(remote_addr);
         char* r_port = hex_to_dec(remote_port);
         char* proc = inode_to_proc(inode);
-        sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
-        printf("%s\n", line);
+        if (strcmp(filter,"") ==0 || strstr(proc, filter) != NULL) {
+            sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
+            printf("%s\n", line);
+        }
         free(l_ip);
         free(l_port);
         free(r_ip);
         free(r_port);
+        free(proc);
     }
     fclose(fp);
 }
@@ -93,12 +100,16 @@ void proto6(char* protocol, char* filter) {
         char* r_ip= hex_to_ipv6(remote_addr);
         char* r_port = hex_to_dec(remote_port);
         char* proc = inode_to_proc(inode);
-        sprintf(line, "%s6 %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
-        printf("%s\n", line);
+        if (strcmp(filter,"") ==0 || strstr(proc, filter) != NULL) {
+            sprintf(line, "%s %s:%s\t%s:%s\t%s",protocol, l_ip, l_port, r_ip,r_port  , proc);
+            printf("%s\n", line);
+        }
         free(l_ip);
         free(l_port);
         free(r_ip);
         free(r_port);
+        free(proc);
     }
     fclose(fp);
+    printf("\n");
 }

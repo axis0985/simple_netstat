@@ -111,6 +111,8 @@ char* hex_to_ipv6(char* hex) {
     return res;
 }
 char* inode_to_proc(char* inode) {
+    char* default_res = malloc(4*sizeof(char));
+    strcpy(default_res, "-");
     struct dirent *de;
     DIR *dr = opendir("/proc");
 
@@ -159,6 +161,7 @@ char* inode_to_proc(char* inode) {
                 	char* buffer = malloc(64*sizeof(char));
                     fgets(buffer, 64, fp);
                     sscanf(buffer,"%s", p_name);
+                    free(buffer);
                 }
                 fclose(fp);
                 // Read the proc/<pid>/cmdline to get parameters
@@ -177,11 +180,18 @@ char* inode_to_proc(char* inode) {
                 sprintf(res, "%s/%s %s", pid, p_name, buffer+i+1);
                 closedir(fd_dr);
                 closedir(dr);
+                free(link_path);
+                free(target_path);
+                free(buffer);
+                free(tmp_fd);
+                free(p_name);
+                free(default_res);
                 return res;
             }
         }
         closedir(fd_dr);
+        free(tmp_fd);
     }
     closedir(dr);
-    return "-";
+    return default_res;
 }
